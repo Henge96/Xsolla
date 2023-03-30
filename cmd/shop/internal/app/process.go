@@ -10,9 +10,13 @@ func (a *App) Process(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case t := <-a.cron.Fetch():
-			fmt.Println(t)
+		case limit := <-a.cron.Fetch():
+			fmt.Println(limit)
 			// logic for fetch tasks and send it in queue
 		}
 	}
+}
+
+func (a *App) Events() ([]Task, error) {
+
 }

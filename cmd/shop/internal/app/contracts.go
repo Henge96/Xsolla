@@ -3,12 +3,12 @@ package app
 import (
 	"context"
 	"github.com/gofrs/uuid/v5"
-	"time"
 )
 
 type (
 	// Repo interface for repo data repository.
 	Repo interface {
+		TaskRepo
 		// SaveOrder adds new order to the repository.
 		// Errors: unknown.
 		SaveOrder(context.Context, Order) (*Order, error)
@@ -48,8 +48,8 @@ type (
 	}
 
 	Cron interface {
-		// Fetch get jobs.
+		// Fetch get jobs with limit.
 		// Errors: unknown.
-		Fetch() <-chan time.Time
+		Fetch() <-chan uint8
 	}
 )

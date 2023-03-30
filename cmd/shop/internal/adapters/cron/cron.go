@@ -3,47 +3,46 @@ package cron
 import (
 	"context"
 	"github.com/robfig/cron/v3"
-	"time"
 )
 
 type (
 	Config struct {
 		TimeFetch string
+		Limit     uint8
 	}
 
 	Cron struct {
-		timeouts     timeouts
-		scheduler    *cron.Cron
-		chEventFetch chan time.Time
+		fetch     fetch
+		scheduler *cron.Cron
 	}
 
-	timeouts struct {
-		Fetch string
-		Send  string
+	fetch struct {
+		Timeout      string
+		Limit        uint8
+		chEventFetch chan uint8
 	}
 )
 
 func New(cfg Config) *Cron {
 	return &Cron{
-		timeouts: timeouts{
-			Fetch: cfg.TimeFetch,
+		fetch: fetch{
+			Timeout:      cfg.TimeFetch,
+			Limit:        cfg.Limit,
+			chEventFetch: make(chan uint8),
 		},
-		scheduler:    cron.New(),
-		chEventFetch: make(chan time.Time),
+		scheduler: cron.New(),
 	}
 }
 
-// TimeFetch implements app.Cron.
-func (s *Cron) TimeFetch() <-chan time.Time {
-	return s.chEventFetch
+// Fetch implements app.Cron.
+func (s *Cron) Fetch() <-chan uint8 {
+	return s.fetch.chEventFetch
 }
 
 func (s *Cron) Process(ctx context.Context) (err error) {
 	_, err = s.scheduler.
-		AddFunc(s.timeouts.Fetch, func() {
-			// just for an example
-			t := time.Now()
-			s.chEventFetch <- t
+		AddFunc(s.fetch.Timeout, func() {
+			s.fetch.chEventFetch <- s.fetch.Limit
 		})
 	if err != nil {
 		return

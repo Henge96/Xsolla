@@ -42,12 +42,14 @@ type (
 	}
 
 	EventAddOrder struct {
+		TaskID    uuid.UUID
 		ID        uuid.UUID
 		Status    dom.OrderStatus
 		CreatedAt time.Time
 	}
 
 	EventUpdateOrder struct {
+		TaskID    uuid.UUID
 		ID        uuid.UUID
 		Status    dom.OrderStatus
 		CreatedAt time.Time

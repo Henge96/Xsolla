@@ -6,4 +6,8 @@ type (
 	order struct {
 		ID uuid.UUID `db:"id"`
 	}
+
+	task struct {
+		ID uuid.UUID `id:"id"`
+	}
 )

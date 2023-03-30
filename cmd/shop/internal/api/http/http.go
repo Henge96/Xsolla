@@ -31,6 +31,7 @@ func New(app application) *mux.Router {
 
 	s.HandleFunc("/order", a.MakeOrder).Methods(http.MethodPost)
 	s.HandleFunc("/orders", a.ListOfOrders).Methods(http.MethodGet)
+	s.HandleFunc("/order", a.ChangeOrderStatus).Methods(http.MethodPut)
 
 	return r
 }

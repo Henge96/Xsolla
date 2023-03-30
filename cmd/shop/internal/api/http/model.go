@@ -2,6 +2,7 @@ package http
 
 import (
 	"xsolla/cmd/shop/internal/app"
+	"xsolla/internal/dom"
 )
 
 type (
@@ -16,9 +17,17 @@ type (
 	}
 
 	requestListOrders struct {
+		Limit  int `json:"limit"`
+		Offset int `json:"offset"`
 	}
 
 	responseListOrders struct {
+		ID string `json:"id"`
+	}
+
+	requestUpdateOrderStatus struct {
+		ID     string          `json:"id"`
+		Status dom.OrderStatus `json:"status"`
 	}
 
 	item struct {

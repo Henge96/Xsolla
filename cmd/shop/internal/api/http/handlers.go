@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -12,61 +13,94 @@ import (
 )
 
 func (a *api) MakeOrder(w http.ResponseWriter, r *http.Request) {
-	id, err := a.make(w, r)
+	request, err := validateRequestMakeOrder(r)
 	if err != nil {
 		errHandler(w, err, statusFromError(err))
 		return
 	}
 
-	response := responseMakeOrder{
-		ID: id.String(),
-	}
-	bytes, err := json.Marshal(response)
+	id, err := a.make(r.Context(), *request)
 	if err != nil {
-		errHandler(w, err, http.StatusInternalServerError)
+		errHandler(w, err, statusFromError(err))
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(bytes)
+	err = json.NewEncoder(w).Encode(responseMakeOrder{
+		ID: id.String(),
+	})
 	if err != nil {
-		errHandler(w, err, http.StatusInternalServerError)
+		errHandler(w, err, statusFromError(err))
 		return
 	}
 }
 
 func (a *api) ListOfOrders(w http.ResponseWriter, r *http.Request) {
-	_, _, err := a.list(w, r)
+	request, err := validateRequestListOfOrders(r)
 	if err != nil {
 		errHandler(w, err, statusFromError(err))
 		return
 	}
 
-	response := responseListOrders{}
-	bytes, err := json.Marshal(response)
-	if err != nil {
-		errHandler(w, err, http.StatusInternalServerError)
-		return
-	}
+	_, _, err = a.app.ListOrders(r.Context(), app.OrderParams{
+		Limit:  uint16(request.Limit),
+		Offset: uint16(request.Offset),
+	})
 
-	err = json.NewEncoder(w).Encode(bytes)
+	// todo convert to struct
+	err = json.NewEncoder(w).Encode(responseListOrders{})
 	if err != nil {
-		errHandler(w, err, http.StatusInternalServerError)
+		errHandler(w, err, statusFromError(err))
 		return
 	}
 }
 
-func (a *api) make(_ http.ResponseWriter, r *http.Request) (uuid.UUID, error) {
-	request, err := validate()
+func (a *api) ChangeOrderStatus(w http.ResponseWriter, r *http.Request) {
+	request, err := validateRequestChangeOrderStatus(r)
 	if err != nil {
-		return uuid.Nil, err
+		errHandler(w, err, statusFromError(err))
+		return
 	}
 
+	err = a.app.ChangeOrderStatus(r.Context(), uuid.FromStringOrNil(request.ID), request.Status)
+	if err != nil {
+		errHandler(w, err, statusFromError(err))
+		return
+	}
+
+	return
+}
+
+func statusFromError(err error) int {
+	if err == nil {
+		return http.StatusOK
+	}
+
+	code := http.StatusInternalServerError
+	switch {
+	case errors.Is(err, app.ErrSameStatus):
+		code = http.StatusAlreadyReported
+	case errors.Is(err, app.ErrInvalidArgument):
+		code = http.StatusBadRequest
+	case errors.Is(err, context.DeadlineExceeded):
+		code = http.StatusRequestTimeout
+	case errors.Is(err, context.Canceled):
+		code = http.StatusRequestTimeout
+	}
+
+	return code
+}
+
+func errHandler(w http.ResponseWriter, err error, code int) {
+	http.Error(w, err.Error(), code)
+}
+
+func (a *api) make(ctx context.Context, request requestMakeOrder) (uuid.UUID, error) {
 	appItems := make([]app.Item, len(request.Items))
 	for i := range request.Items {
 		appItems[i] = request.Items[i].convert()
 	}
 
-	id, err := a.app.CreateOrder(r.Context(), app.Order{
+	id, err := a.app.CreateOrder(ctx, app.Order{
 		Address: app.Address{
 			City:     request.Address.City,
 			Street:   request.Address.Street,
@@ -84,49 +118,32 @@ func (a *api) make(_ http.ResponseWriter, r *http.Request) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (a *api) list(_ http.ResponseWriter, r *http.Request) ([]app.Order, int, error) {
+// todo validate logic
+func validateRequestMakeOrder(_ *http.Request) (*requestMakeOrder, error) {
+	return &requestMakeOrder{}, nil
+}
+
+// todo validate logic
+func validateRequestChangeOrderStatus(_ *http.Request) (*requestUpdateOrderStatus, error) {
+	return &requestUpdateOrderStatus{}, nil
+}
+
+func validateRequestListOfOrders(r *http.Request) (*requestListOrders, error) {
 	vars := mux.Vars(r)
 
 	limit, err := strconv.Atoi(vars["limit"])
 	if err != nil || limit < 0 {
-		return nil, 0, app.ErrInvalidArgument
+		return nil, fmt.Errorf("wrong limit: %w", app.ErrInvalidArgument)
 	}
 
 	offset, err := strconv.Atoi(vars["offset"])
 	if err != nil || offset < 0 {
-		return nil, 0, app.ErrInvalidArgument
+		return nil, fmt.Errorf("wrong offset: %w", app.ErrInvalidArgument)
 	}
 
-	res, total, err := a.app.ListOrders(r.Context(), app.OrderParams{
-		Limit:  uint16(limit),
-		Offset: uint16(offset),
-	})
-
-	return res, total, nil
-}
-
-func statusFromError(err error) int {
-	if err == nil {
-		return http.StatusOK
-	}
-
-	code := http.StatusInternalServerError
-	switch {
-	case errors.Is(err, app.ErrInvalidArgument):
-		code = http.StatusBadRequest
-	case errors.Is(err, context.DeadlineExceeded):
-		code = http.StatusRequestTimeout
-	case errors.Is(err, context.Canceled):
-		code = http.StatusRequestTimeout
-	}
-
-	return code
-}
-
-func errHandler(w http.ResponseWriter, err error, code int) {
-	http.Error(w, err.Error(), code)
-}
-
-func validate() (*requestMakeOrder, error) {
-	return &requestMakeOrder{}, nil
+	// todo
+	return &requestListOrders{
+		Limit:  limit,
+		Offset: offset,
+	}, nil
 }

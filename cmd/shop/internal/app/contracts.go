@@ -9,12 +9,15 @@ type (
 	// Repo interface for repo data repository.
 	Repo interface {
 		TaskRepo
+		// Tx transaction for repo methods.
+		// Errors: unknown.
+		Tx(ctx context.Context, f func(Repo) error) error
 		// SaveOrder adds new order to the repository.
 		// Errors: unknown.
 		SaveOrder(context.Context, Order) (*Order, error)
 		// UpdateOrder order in repo.
 		// Errors: unknown.
-		UpdateOrder(context.Context, Order) error
+		UpdateOrder(context.Context, Order) (*Order, error)
 		// GetOrder order by id.
 		// Errors: ErrNotFound, unknown.
 		GetOrder(context.Context, uuid.UUID) (*Order, error)

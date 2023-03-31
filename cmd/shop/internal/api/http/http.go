@@ -13,6 +13,7 @@ type application interface {
 	CreateOrder(ctx context.Context, order app.Order) (uuid.UUID, error)
 	ListOrders(ctx context.Context, params app.OrderParams) ([]app.Order, int, error)
 	ChangeOrderStatus(ctx context.Context, orderID uuid.UUID, status dom.OrderStatus) error
+	GetOrder(ctx context.Context, id uuid.UUID) (*app.Order, error)
 }
 
 type api struct {
@@ -27,11 +28,11 @@ func New(app application) *mux.Router {
 	r := mux.NewRouter()
 	r.Use(exampleMiddleware)
 
-	s := r.PathPrefix("v1").Subrouter()
-
-	s.HandleFunc("/order", a.MakeOrder).Methods(http.MethodPost)
-	s.HandleFunc("/orders", a.ListOfOrders).Methods(http.MethodGet)
-	s.HandleFunc("/order", a.ChangeOrderStatus).Methods(http.MethodPut)
+	// todo change to version prefix
+	r.HandleFunc("/v1/order", a.MakeOrder).Methods(http.MethodPost)
+	r.HandleFunc("/v1/orders", a.ListOfOrders).Methods(http.MethodGet)
+	r.HandleFunc("/v1/order", a.ListOfOrders).Methods(http.MethodGet)
+	r.HandleFunc("/v1/order", a.ChangeOrderStatus).Methods(http.MethodPut)
 
 	return r
 }

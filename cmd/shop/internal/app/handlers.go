@@ -9,6 +9,7 @@ import (
 
 func (a *App) CreateOrder(ctx context.Context, order Order) (id uuid.UUID, err error) {
 	err = a.repo.Tx(ctx, func(repo Repo) error {
+		order.Status = dom.OrderStatusNew
 		o, err := a.repo.SaveOrder(ctx, order)
 		if err != nil {
 			return fmt.Errorf("a.repo.SaveOrder: %w", err)
@@ -37,6 +38,7 @@ func (a *App) ListOrders(ctx context.Context, params OrderParams) ([]Order, int,
 }
 
 func (a *App) ChangeOrderStatus(ctx context.Context, orderID uuid.UUID, status dom.OrderStatus) error {
+	// todo validate status
 	order, err := a.repo.GetOrder(ctx, orderID)
 	if err != nil {
 		return fmt.Errorf("a.repo.GetOrder: %w", err)
@@ -69,4 +71,13 @@ func (a *App) ChangeOrderStatus(ctx context.Context, orderID uuid.UUID, status d
 	}
 
 	return nil
+}
+
+func (a *App) GetOrder(ctx context.Context, id uuid.UUID) (*Order, error) {
+	order, err := a.repo.GetOrder(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("a.repo.GetOrder: %w", err)
+	}
+
+	return order, nil
 }

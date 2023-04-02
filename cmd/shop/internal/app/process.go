@@ -14,11 +14,12 @@ func (a *App) Process(ctx context.Context) (err error) {
 			fmt.Println(limit)
 			_, err = a.Events(ctx, limit)
 			// logic for fetch tasks and send it in queue
+			continue
 		}
 	}
 }
 
-func (a *App) Events(ctx context.Context, limit uint8) ([]Task, error) {
+func (a *App) Events(ctx context.Context, limit uint16) ([]Task, error) {
 	_, _ = a.repo.ListActualTask(ctx, int(limit))
 	return nil, nil
 }

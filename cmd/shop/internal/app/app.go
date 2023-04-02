@@ -1,15 +1,17 @@
 package app
 
 type App struct {
-	repo  Repo
-	queue Queue
-	cron  Cron
+	repo             Repo
+	queue            Queue
+	cron             Cron
+	addressValidator AddressValidator
 }
 
-func New(r Repo, q Queue, c Cron) *App {
+func New(r Repo, q Queue, c Cron, a AddressValidator) *App {
 	return &App{
-		repo:  r,
-		queue: q,
-		cron:  c,
+		repo:             r,
+		queue:            q,
+		cron:             c,
+		addressValidator: a,
 	}
 }

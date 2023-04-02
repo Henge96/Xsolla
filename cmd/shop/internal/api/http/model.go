@@ -21,6 +21,7 @@ type (
 		Offset int `json:"offset"`
 	}
 
+	// todo add fields to response
 	responseListOrders struct {
 		ID string `json:"id"`
 	}
@@ -31,9 +32,9 @@ type (
 	}
 
 	item struct {
-		Type  string `json:"type"`
-		Name  string `json:"name"`
-		Count uint16 `json:"count"`
+		Product product `json:"product"`
+		Count   uint16  `json:"count"`
+		Comment string  `json:"comment"`
 	}
 
 	address struct {
@@ -43,8 +44,21 @@ type (
 		Entrance string `json:"entrance"`
 		Flat     string `json:"flat"`
 	}
+
+	product struct {
+		Type string `json:"type"`
+		Name string `json:"name"`
+	}
 )
 
+// todo convert logic
+func (p product) convert() app.Product {
+	return app.Product{}
+}
+
+// todo convert logic
 func (i item) convert() app.Item {
-	return app.Item{}
+	return app.Item{
+		Product: i.Product.convert(),
+	}
 }

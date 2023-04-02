@@ -20,20 +20,30 @@ type (
 	Item struct {
 		ID uuid.UUID
 		// must be enum
+		OrderID uuid.UUID
+		Product Product
+		Count   uint16
+		Comment string
+	}
+
+	// todo think to replace in another service
+	Product struct {
+		ID uuid.UUID
+		// must be enum (examples in package dom)
 		Type string
-		// must be unique
-		Name  string
-		Count uint16
-		// etc
+		// enum
+		Name string
+		// maybe desc, receipt, etc...
 	}
 
 	Address struct {
+		// enum
 		City     string
 		Street   string
 		House    string
 		Entrance string
 		Flat     string
-		// etc
+		// maybe postcode, desc etc...
 	}
 
 	OrderParams struct {
@@ -64,3 +74,5 @@ type (
 		FinishedAt time.Time
 	}
 )
+
+

@@ -21,3 +21,6 @@ db:
 scheduler:
   time_fetch: 30
   limit: 10
+address_validator:
+  base_path: "example.com"
+  api_key: "super_duper_secret_key"

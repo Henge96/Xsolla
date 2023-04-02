@@ -2,9 +2,6 @@ package queue
 
 import (
 	"context"
-	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
-	"strings"
 	pb "xsolla/api/shop/v1"
 	"xsolla/cmd/shop/internal/app"
 	"xsolla/libs/queue"
@@ -21,30 +18,27 @@ type (
 		ClusterMode bool
 	}
 	// Client provided data from and to message broker.
+	// todo add metrics
 	Client struct {
 		nats *queue.NATS
-		m    Metrics
 	}
 )
 
 // New build and returns new queue instance.
-func New(ctx context.Context, reg *prometheus.Registry, namespace string, cfg Config) (*Client, error) {
-	const subsystem = "queue"
-	m := NewMetrics(reg, namespace, subsystem, []string{})
-
-	client, err := queue.ConnectNATS(ctx, strings.Join(cfg.URLs, ","), namespace, cfg.Username, cfg.Password)
-	if err != nil {
-		return nil, fmt.Errorf("queue.ConnectNATS: %w", err)
-	}
-
-	err = pb.Migrate(client.JetStream)
-	if err != nil {
-		return nil, fmt.Errorf("post.Migrate: %w", err)
-	}
+func New(ctx context.Context,  namespace string, cfg Config) (*Client, error) {
+	//todo add real connect
+	//client, err := queue.ConnectNATS(ctx, strings.Join(cfg.URLs, ","), namespace, cfg.Username, cfg.Password)
+	//if err != nil {
+	//	return nil, fmt.Errorf("queue.ConnectNATS: %w", err)
+	//}
+	//
+	//err = pb.Migrate(client.JetStream)
+	//if err != nil {
+	//	return nil, fmt.Errorf("post.Migrate: %w", err)
+	//}
 
 	return &Client{
-		nats: client,
-		m:    m,
+		//nats: client,
 	}, nil
 }
 
@@ -58,4 +52,8 @@ func (c *Client) UpdateOrder(ctx context.Context, eventUpdate app.EventUpdateOrd
 	// just example about publishing
 	_ = c.nats.Publish(ctx, pb.TopicUpdate, eventUpdate.TaskID, eventUpdate)
 	return nil
+}
+
+func (c *Client) Close() error {
+	return c.nats.Drain()
 }

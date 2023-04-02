@@ -8,12 +8,21 @@ import (
 )
 
 func (a *App) CreateOrder(ctx context.Context, order Order) (id uuid.UUID, err error) {
+	products, err := a.repo.ListProducts(ctx, order.Items)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("a.repo.ListProducts")
+	}
+
+	order.Items = filterItemsByProduct(order.Items, products)
+	order.Status = dom.OrderStatusNew
+
 	err = a.repo.Tx(ctx, func(repo Repo) error {
-		order.Status = dom.OrderStatusNew
 		o, err := a.repo.SaveOrder(ctx, order)
 		if err != nil {
 			return fmt.Errorf("a.repo.SaveOrder: %w", err)
 		}
+		id = o.ID
+
 
 		_, err = a.repo.SaveTask(ctx, Task{
 			Order:    *o,
@@ -23,7 +32,6 @@ func (a *App) CreateOrder(ctx context.Context, order Order) (id uuid.UUID, err e
 			return fmt.Errorf("a.repo.SaveTask: %w", err)
 		}
 
-		id = o.ID
 		return nil
 	})
 	if err != nil {
@@ -80,4 +88,17 @@ func (a *App) GetOrder(ctx context.Context, id uuid.UUID) (*Order, error) {
 	}
 
 	return order, nil
+}
+
+func filterItemsByProduct(items []Item, products []Product) []Item {
+	filteredItems := make([]Item, 0, len(items))
+	for _, item := range items {
+		for _, product := range products {
+			if item.Product.Type == product.Type && item.Product.Name == product.Name {
+				item.Product = product
+				filteredItems = append(filteredItems, item)
+			}
+		}
+	}
+	return filteredItems
 }

@@ -24,6 +24,9 @@ type (
 		// ListOrders returns orders by params.
 		// Errors: unknown.
 		ListOrders(context.Context, OrderParams) ([]Order, int, error)
+		// ListProducts returns products by kind and name.
+		// Errors: unknown.
+		ListProducts(context.Context, []Item) ([]Product, error)
 	}
 
 	// TaskRepo interface for saving orders.
@@ -53,6 +56,12 @@ type (
 	Cron interface {
 		// Fetch get jobs with limit.
 		// Errors: unknown.
-		Fetch() <-chan uint8
+		Fetch() <-chan uint16
+	}
+
+	AddressValidator interface {
+		// CheckAddress checks that address exist.
+		// Errors: ErrNotFound, unknown.
+		CheckAddress(ctx context.Context, a Address) error
 	}
 )

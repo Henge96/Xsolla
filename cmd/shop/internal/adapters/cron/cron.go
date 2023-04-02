@@ -8,7 +8,7 @@ import (
 type (
 	Config struct {
 		TimeFetch string
-		Limit     uint8
+		Limit     uint16
 	}
 
 	Cron struct {
@@ -18,8 +18,8 @@ type (
 
 	fetch struct {
 		Timeout      string
-		Limit        uint8
-		chEventFetch chan uint8
+		Limit        uint16
+		chEventFetch chan uint16
 	}
 )
 
@@ -28,14 +28,14 @@ func New(cfg Config) *Cron {
 		fetch: fetch{
 			Timeout:      cfg.TimeFetch,
 			Limit:        cfg.Limit,
-			chEventFetch: make(chan uint8),
+			chEventFetch: make(chan uint16),
 		},
 		scheduler: cron.New(),
 	}
 }
 
 // Fetch implements app.Cron.
-func (s *Cron) Fetch() <-chan uint8 {
+func (s *Cron) Fetch() <-chan uint16 {
 	return s.fetch.chEventFetch
 }
 

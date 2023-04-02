@@ -13,9 +13,9 @@ type Repo struct {
 	db *sqlx.DB
 }
 
-func New(db *sqlx.DB) Repo {
+func New(db *sqlx.DB) *Repo {
 	// metrics, migrations ...
-	return Repo{db: db}
+	return &Repo{db: db}
 }
 
 func (r *Repo) SaveOrder(ctx context.Context, order app.Order) (*app.Order, error) {
@@ -49,6 +49,11 @@ func (r *Repo) FinishTask(ctx context.Context, uuid uuid.UUID) error {
 }
 
 func (r *Repo) ListActualTask(ctx context.Context, i int) ([]app.Task, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *Repo) ListProducts(ctx context.Context, items []app.Item) ([]app.Product, error) {
 	//TODO implement me
 	panic("implement me")
 }

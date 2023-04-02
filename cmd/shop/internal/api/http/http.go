@@ -20,7 +20,7 @@ type api struct {
 	app application
 }
 
-func New(app application) *mux.Router {
+func New(app application) http.Handler {
 	a := &api{
 		app,
 	}

@@ -13,6 +13,11 @@ type txRepo struct {
 	tx *sqlx.Tx
 }
 
+func (tx *txRepo) SaveItem(ctx context.Context, i app.Item) (*app.Item, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (tx *txRepo) ListProducts(ctx context.Context, items []app.Item) ([]app.Product, error) {
 	//TODO implement me
 	panic("implement me")

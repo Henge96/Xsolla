@@ -27,6 +27,9 @@ type (
 		// ListProducts returns products by kind and name.
 		// Errors: unknown.
 		ListProducts(context.Context, []Item) ([]Product, error)
+		// SaveItem adds item in repository.
+		// Errors. unknown.
+		SaveItem(context.Context, Item) (*Item, error)
 	}
 
 	// TaskRepo interface for saving orders.

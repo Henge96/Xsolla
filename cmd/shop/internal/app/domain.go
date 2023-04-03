@@ -52,6 +52,7 @@ type (
 	}
 
 	EventAddOrder struct {
+		// todo add order fields
 		TaskID    uuid.UUID
 		ID        uuid.UUID
 		Status    dom.OrderStatus
@@ -59,6 +60,7 @@ type (
 	}
 
 	EventUpdateOrder struct {
+		// todo add order fields
 		TaskID    uuid.UUID
 		ID        uuid.UUID
 		Status    dom.OrderStatus

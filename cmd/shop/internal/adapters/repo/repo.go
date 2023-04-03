@@ -58,6 +58,11 @@ func (r *Repo) ListProducts(ctx context.Context, items []app.Item) ([]app.Produc
 	panic("implement me")
 }
 
+func (r *Repo) SaveItem(context.Context, app.Item) (*app.Item, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (r *Repo) Tx(ctx context.Context, f func(app.Repo) error) error {
 	opts := &sql.TxOptions{
 		Isolation: sql.LevelSerializable,

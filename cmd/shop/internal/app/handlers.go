@@ -23,6 +23,16 @@ func (a *App) CreateOrder(ctx context.Context, order Order) (id uuid.UUID, err e
 		}
 		id = o.ID
 
+		// todo change to save in batch
+		for i := range order.Items {
+			order.Items[i].OrderID = o.ID
+			item, err := a.repo.SaveItem(ctx, order.Items[i])
+			if err != nil {
+				return fmt.Errorf("a.repo.SaveItem: %w", err)
+			}
+
+			o.Items = append(o.Items, *item)
+		}
 
 		_, err = a.repo.SaveTask(ctx, Task{
 			Order:    *o,

@@ -11,3 +11,14 @@ const (
 	TaskKindEventAdd
 	TaskKindEventUpdate
 )
+
+func DomTaskKind(txt string) TaskKind {
+	switch {
+	case TaskKindEventAdd.String() == txt:
+		return TaskKindEventAdd
+	case TaskKindEventUpdate.String() == txt:
+		return TaskKindEventUpdate
+	default:
+		return 0
+	}
+}

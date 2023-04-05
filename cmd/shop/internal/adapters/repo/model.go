@@ -1,12 +1,9 @@
 package repo
 
 import (
-	"encoding/json"
-	"fmt"
 	"github.com/gofrs/uuid/v5"
-	"strings"
+	"github.com/jackc/pgtype"
 	"time"
-	"xsolla/cmd/shop/internal/app"
 	"xsolla/internal/dom"
 )
 
@@ -14,8 +11,8 @@ import (
 type (
 	order struct {
 		ID        uuid.UUID       `db:"id" json:"id"`
-		Address   []byte          `db:"address" json:"address"`
-		Items     []byte          `db:"items" json:"items"`
+		Address   pgtype.JSONB    `db:"address" json:"address"`
+		Items     pgtype.JSONB    `db:"items" json:"items"`
 		Status    dom.OrderStatus `db:"status" json:"status"`
 		Comment   string          `db:"comment" json:"comment"`
 		CreatedAt time.Time       `db:"created_at" json:"created_at"`
@@ -40,10 +37,11 @@ type (
 	}
 
 	item struct {
-		OrderID uuid.UUID `db:"order_id"`
-		Product []byte    `db:"product"`
-		Count   uint16    `db:"count"`
-		Comment string    `db:"comment"`
+		ID      uuid.UUID    `db:"id"`
+		OrderID uuid.UUID    `db:"order_id"`
+		Product pgtype.JSONB `db:"product"`
+		Count   uint16       `db:"count"`
+		Comment string       `db:"comment"`
 	}
 
 	product struct {
@@ -53,36 +51,3 @@ type (
 	}
 )
 
-func convertToOrder(o app.Order) *order {
-	return &order{}
-}
-
-func convertToAddress(a app.Address) *address {
-	return &address{}
-}
-
-func convertToProduct(p app.Product) *product {
-	return &product{}
-}
-
-
-
-func prepareItems(items []app.Item) (string, error) {
-	valueStrings := make([]string, 0, len(items))
-	valueArgs := make([]interface{}, 0, len(items)*3)
-	for _, i := range items {
-		repoProduct := convertToProduct(i.Product)
-		repoProductBytes, err := json.Marshal(repoProduct)
-		if err != nil {
-			return "", fmt.Errorf("json.Marshal: %w", err)
-		}
-
-		valueStrings = append(valueStrings, "($1, $2, $3, $4)")
-		valueArgs = append(valueArgs, i.OrderID)
-		valueArgs = append(valueArgs, repoProductBytes)
-		valueArgs = append(valueArgs, i.Count)
-		valueArgs = append(valueArgs, i.Comment)
-	}
-	return fmt.Sprintf("INSERT INTO items (order_id, product, count, comment) VALUES %s",
-		strings.Join(valueStrings, ",")), nil
-}

@@ -47,6 +47,7 @@ type (
 	}
 
 	OrderParams struct {
+		Status dom.OrderStatus
 		Limit  uint16
 		Offset uint16
 	}
@@ -75,6 +76,11 @@ type (
 		UpdatedAt  time.Time
 		FinishedAt time.Time
 	}
+
+	// todo rename probably
+	EventUpdateOrderStatusFromQueue struct {
+		SourceID        uuid.UUID
+		Status          dom.OrderStatus
+		SourceCreatedAt time.Time
+	}
 )
-
-

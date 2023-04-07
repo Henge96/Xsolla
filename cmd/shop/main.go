@@ -144,7 +144,8 @@ func run(ctx context.Context, cfg config, namespace string) error {
 	// it can be grpc, metrics, gateways...
 	return serve.Start(ctx,
 		serve.HTTP(cfg.Server.Host, cfg.Server.Port.HTTP, api),
-		module.Process)
+		module.Process,
+		q.Process)
 }
 
 func forceShutdown(ctx context.Context) {

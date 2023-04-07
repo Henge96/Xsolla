@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"github.com/gofrs/uuid/v5"
+	"xsolla/internal/dom"
 )
 
 type (
@@ -26,7 +27,7 @@ type (
 		ListOrders(context.Context, OrderParams) ([]Order, int, error)
 		// ListProducts returns products by kind and name.
 		// Errors: unknown.
-		ListProducts(context.Context, []Item) ([]Product, error)
+		ListProducts(ctx context.Context, types, names []string) ([]Product, error)
 		// SaveItem adds item in repository.
 		// Errors. unknown.
 		SaveItem(context.Context, Item) (*Item, error)
@@ -54,6 +55,9 @@ type (
 		// UpdateOrder sends event 'EventUpdateOrder' to queue.
 		// Errors: unknown.
 		UpdateOrder(ctx context.Context, eventUpdate EventUpdateOrder) error
+		// UpdateOrderStatus gets EventUpdateOrderStatusFromQueue from queue.
+		// Errors: unknown.
+		UpdateOrderStatus() <-chan dom.Event[EventUpdateOrderStatusFromQueue]
 	}
 
 	Cron interface {

@@ -8,7 +8,8 @@ import (
 )
 
 func (a *App) CreateOrder(ctx context.Context, order Order) (id uuid.UUID, err error) {
-	products, err := a.repo.ListProducts(ctx, order.Items)
+	types, names := typesAndNamesFromItems(order.Items)
+	products, err := a.repo.ListProducts(ctx, types, names)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("a.repo.ListProducts")
 	}
@@ -111,4 +112,17 @@ func filterItemsByProduct(items []Item, products []Product) []Item {
 		}
 	}
 	return filteredItems
+}
+
+func typesAndNamesFromItems(items []Item) ([]string, []string) {
+	var (
+		types, names []string
+	)
+
+	for i := range items {
+		types = append(types, items[i].Product.Type)
+		names = append(names, items[i].Product.Name)
+	}
+
+	return types, names
 }

@@ -27,6 +27,11 @@ func convertToTask(t app.Task) (*task, error) {
 	return &task{}, nil
 }
 
+// todo add convert logic
+func convertToItem(i app.Item) (*item, error) {
+	return &item{}, nil
+}
+
 func (o *order) convert() (*app.Order, error) {
 	var addr address
 	err := json.Unmarshal(o.Address.Bytes, &addr)
@@ -50,7 +55,7 @@ func (o *order) convert() (*app.Order, error) {
 		appItems = append(appItems, *appItem)
 	}
 
-	status := dom.ToOrderStatus(o.Status.String())
+	status := dom.ToOrderStatus(o.Status)
 	if status == 0 {
 		panic(fmt.Sprintf("unknown status in order: %v", o))
 	}
@@ -133,7 +138,7 @@ func (t *task) convert() (*app.Task, error) {
 		return nil, fmt.Errorf("convert: %w", err)
 	}
 
-	taskKind := dom.DomTaskKind(o.Status.String())
+	taskKind := dom.DomTaskKind(o.Status)
 	if taskKind == 0 {
 		panic(fmt.Sprintf("unknown status in task: %v", o))
 	}

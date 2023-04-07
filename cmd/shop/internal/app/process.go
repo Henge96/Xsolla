@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"sync"
@@ -47,6 +48,13 @@ func (a *App) Process(ctx context.Context) error {
 
 					continue
 				}
+			}
+		case msg := <-a.queue.UpdateOrderStatus():
+			err = a.handleUpdateOrderStatus(ctx, msg)
+			if err != nil {
+				log.Println("couldn't handle event", err)
+
+				continue
 			}
 		}
 	}
@@ -121,6 +129,27 @@ func (a *App) handleTaskKindEventUpdate(ctx context.Context, task Task) error {
 	if err != nil {
 		return fmt.Errorf("a.repo.FinishTask: %w", err)
 	}
+
+	return nil
+}
+
+func (a *App) handleUpdateOrderStatus(ctx context.Context, event dom.Event[EventUpdateOrderStatusFromQueue]) error {
+	order := Order{
+		ID:        event.Body().SourceID,
+		Status:    event.Body().Status,
+	}
+
+	_, err := a.repo.UpdateOrder(ctx, order)
+	switch {
+	case errors.Is(err, ErrDuplicate):
+	// We must acknowledge this message.
+	case err != nil:
+		event.Nack(ctx)
+
+		return fmt.Errorf("a.repo.SavePost: %w", err)
+	}
+
+	event.Ack(ctx)
 
 	return nil
 }

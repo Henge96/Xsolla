@@ -75,6 +75,11 @@ type (
 		UpdatedAt  time.Time
 		FinishedAt time.Time
 	}
+
+	// todo rename probably
+	EventUpdateOrderStatusFromQueue struct {
+		SourceID        uuid.UUID
+		Status          dom.OrderStatus
+		SourceCreatedAt time.Time
+	}
 )
-
-

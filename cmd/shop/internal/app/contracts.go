@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"github.com/gofrs/uuid/v5"
+	"xsolla/internal/dom"
 )
 
 type (
@@ -54,6 +55,9 @@ type (
 		// UpdateOrder sends event 'EventUpdateOrder' to queue.
 		// Errors: unknown.
 		UpdateOrder(ctx context.Context, eventUpdate EventUpdateOrder) error
+		// UpdateOrderStatus gets EventUpdateOrderStatusFromQueue from queue.
+		// Errors: unknown.
+		UpdateOrderStatus() <-chan dom.Event[EventUpdateOrderStatusFromQueue]
 	}
 
 	Cron interface {

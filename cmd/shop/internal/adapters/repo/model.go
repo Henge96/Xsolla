@@ -4,19 +4,18 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgtype"
 	"time"
-	"xsolla/internal/dom"
 )
 
 // todo structs fields and converts
 type (
 	order struct {
-		ID        uuid.UUID       `db:"id" json:"id"`
-		Address   pgtype.JSONB    `db:"address" json:"address"`
-		Items     pgtype.JSONB    `db:"items" json:"items"`
-		Status    dom.OrderStatus `db:"status" json:"status"`
-		Comment   string          `db:"comment" json:"comment"`
-		CreatedAt time.Time       `db:"created_at" json:"created_at"`
-		UpdatedAt time.Time       `db:"updated_at" json:"updated_at"`
+		ID        uuid.UUID    `db:"id" json:"id"`
+		Address   pgtype.JSONB `db:"address" json:"address"`
+		Items     pgtype.JSONB `db:"items" json:"items"`
+		Status    string       `db:"status" json:"status"`
+		Comment   string       `db:"comment" json:"comment"`
+		CreatedAt time.Time    `db:"created_at" json:"created_at"`
+		UpdatedAt time.Time    `db:"updated_at" json:"updated_at"`
 	}
 
 	task struct {
@@ -50,4 +49,3 @@ type (
 		Name string    `db:"name" json:"name"`
 	}
 )
-

@@ -47,6 +47,7 @@ type (
 	}
 
 	OrderParams struct {
+		Status dom.OrderStatus
 		Limit  uint16
 		Offset uint16
 	}

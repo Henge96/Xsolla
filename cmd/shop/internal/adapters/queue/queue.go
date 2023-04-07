@@ -76,9 +76,20 @@ func (c *Client) Process(ctx context.Context) error {
 	}
 
 	for i := range subjects {
-		i := i
+		// todo add after implement sub logic
+		_ = i
+
 		group.Go(func() error {
-			return c.nats.Subscribe(ctx, subjects[i], c.consumerName, c.handleEvent)
+			//return c.nats.Subscribe(ctx, subjects[i], c.consumerName, c.handleEvent)
+
+			for {
+				select {
+				case <- ctx.Done():
+					return ctx.Err()
+				case _ = <- time.Tick(1 * time.Hour):
+					continue
+				}
+			}
 		})
 	}
 

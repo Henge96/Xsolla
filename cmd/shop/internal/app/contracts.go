@@ -27,7 +27,7 @@ type (
 		ListOrders(context.Context, OrderParams) ([]Order, int, error)
 		// ListProducts returns products by kind and name.
 		// Errors: unknown.
-		ListProducts(context.Context, []Item) ([]Product, error)
+		ListProducts(ctx context.Context, types, names []string) ([]Product, error)
 		// SaveItem adds item in repository.
 		// Errors. unknown.
 		SaveItem(context.Context, Item) (*Item, error)

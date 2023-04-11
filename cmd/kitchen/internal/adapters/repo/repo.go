@@ -2,6 +2,8 @@ package repo
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"github.com/gofrs/uuid/v5"
 	"github.com/jmoiron/sqlx"
 	"xsolla/cmd/kitchen/internal/app"
@@ -22,7 +24,7 @@ func (r *Repo) Close() error {
 	return r.db.Close()
 }
 
-func (r *Repo) Tx(ctx context.Context, f func(app.Repo) error) error {
+func (r *Repo) UpdateCookingStatusByOrderID(ctx context.Context, orderID uuid.UUID, status app.CookingStatus) (*app.Cooking, error) {
 	//TODO implement me
 	panic("implement me")
 }
@@ -75,4 +77,33 @@ func (r *Repo) GetCooking(ctx context.Context, uuid uuid.UUID) (*app.Cooking, er
 func (r *Repo) ListCooking(ctx context.Context, params app.CookingParams) ([]app.Cooking, int, error) {
 	//TODO implement me
 	panic("implement me")
+}
+
+func (r *Repo) Tx(ctx context.Context, f func(app.Repo) error) error {
+	opts := &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
+		ReadOnly:  false,
+	}
+
+	return txHelper(ctx, r.db, opts, func(tx *sqlx.Tx) error {
+		return f(&txRepo{tx: tx})
+	})
+}
+
+func txHelper(ctx context.Context, db *sqlx.DB, opts *sql.TxOptions, cb func(tx *sqlx.Tx) error) error {
+	tx, err := db.BeginTxx(ctx, opts)
+	if err != nil {
+		return fmt.Errorf("db.BeginTx: %w", err)
+	}
+
+	err = cb(tx)
+	if err != nil {
+		errRollback := tx.Rollback()
+		if errRollback != nil {
+			err = fmt.Errorf("%w: %s", err, errRollback)
+		}
+		return err
+	}
+
+	return tx.Commit()
 }

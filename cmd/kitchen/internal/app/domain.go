@@ -13,7 +13,7 @@ type (
 		// next two fields for example what can be in real project
 		Chef      uuid.UUID
 		Table     uint32
-		Order     Order
+		OrderID   uuid.UUID
 		CreatedAt time.Time
 		UpdatedAt time.Time
 	}
@@ -86,7 +86,10 @@ type CookingStatus uint8
 
 //go:generate stringer -output=stringer.CookingStatus.go -type=CookingStatus -trimprefix=CookingStatus
 const (
+	// todo add status canceled in future
 	_ CookingStatus = iota
-	OrderStatusNew
-	OrderStatusCompleted
+	CookingStatusNew
+	CookingStatusNeedToStart
+	CookingStatusInProgress
+	CookingStatusCompleted
 )

@@ -89,22 +89,37 @@ func (a *App) handleTaskKindEventUpdate(ctx context.Context, task Task) error {
 func (a *App) handleNewOrder(ctx context.Context, event dom.Event[EventAddOrderFromQueue]) error {
 	rand.Seed(time.Now().Unix())
 
-	c := Cooking{
-		Status: OrderStatusNew,
-		// in real proj get from repo
-		Chef:  uuid.Must(uuid.NewV4()),
-		Table: rand.Uint32(),
-		Order: event.Body().Order,
-	}
+	err := a.repo.Tx(ctx, func(repo Repo) error {
+		order, err := a.repo.SaveOrder(ctx, event.Body().Order)
+		switch {
+		case errors.Is(err, ErrDuplicate):
+			// We must acknowledge this message.
+			event.Ack(ctx)
 
-	_, err := a.repo.SaveCooking(ctx, c)
-	switch {
-	case errors.Is(err, ErrDuplicate):
-	// We must acknowledge this message.
-	case err != nil:
+			return nil
+		case err != nil:
+			return fmt.Errorf("a.repo.SaveOrder: %w", err)
+		}
+
+		c := Cooking{
+			Status: CookingStatusNew,
+			// in production project get from repo
+			Chef:    uuid.Must(uuid.NewV4()),
+			Table:   rand.Uint32(),
+			OrderID: order.ID,
+		}
+
+		_, err = a.repo.SaveCooking(ctx, c)
+		if err != nil {
+			return fmt.Errorf("a.repo.SaveCooking: %w", err)
+		}
+
+		return nil
+	})
+	if err != nil {
 		event.Nack(ctx)
 
-		return fmt.Errorf("a.repo.SaveCooking: %w", err)
+		return err
 	}
 
 	event.Ack(ctx)
@@ -113,27 +128,43 @@ func (a *App) handleNewOrder(ctx context.Context, event dom.Event[EventAddOrderF
 }
 
 func (a *App) handleUpdateOrder(ctx context.Context, event dom.Event[EventUpdateOrderStatusFromQueue]) error {
-	order, err := a.repo.GetOrder(ctx, event.Body().SourceID)
-	switch {
-	case errors.Is(err, ErrNotFound):
-		event.Ack(ctx)
+	// todo add logic if order was canceled in cooking process
+	if event.Body().Status == dom.OrderStatusConfirmed {
+		order, err := a.repo.GetOrder(ctx, event.Body().SourceID)
+		switch {
+		case errors.Is(err, ErrNotFound):
+			// todo think how to fix or notify about this
+			event.Ack(ctx)
 
-		return nil
-	case err != nil:
-		event.Nack(ctx)
+			return nil
+		case err != nil:
+			event.Nack(ctx)
 
-		return fmt.Errorf("a.repo.GetPost: %w", err)
+			return fmt.Errorf("a.repo.GetPost: %w", err)
+		}
+
+		order.Status = event.Body().Status
+
+		err = a.repo.Tx(ctx, func(repo Repo) error {
+			_, err = a.repo.UpdateOrder(ctx, *order)
+			if err != nil {
+				return fmt.Errorf("a.repo.UpdateOrder: %w", err)
+			}
+
+			_, err = a.repo.UpdateCookingStatusByOrderID(ctx, order.ID, CookingStatusNeedToStart)
+			if err != nil {
+				return fmt.Errorf("a.repo.UpdateCookingStatusByOrderID: %w", err)
+			}
+
+			return nil
+		})
+		if err != nil {
+			event.Nack(ctx)
+
+			return fmt.Errorf("a.repo.GetPost: %w", err)
+		}
 	}
-
-	if event.Body().Status == order.Status {
-		// todo add err logic
-		return ErrDuplicate
-	}
-
-	err = a.repo.Tx(ctx, func(repo Repo) error {
-		//todo tx
-		return nil
-	})
+	event.Ack(ctx)
 
 	return nil
 }

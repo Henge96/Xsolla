@@ -19,6 +19,9 @@ type (
 		// UpdateCooking order in repo.
 		// Errors: unknown.
 		UpdateCooking(context.Context, Cooking) (*Cooking, error)
+		// UpdateCookingStatusByOrderID in repo.
+		// Errors: unknown.
+		UpdateCookingStatusByOrderID(ctx context.Context, orderID uuid.UUID, status CookingStatus) (*Cooking, error)
 		// GetCooking by id.
 		// Errors: ErrNotFound, unknown.
 		GetCooking(context.Context, uuid.UUID) (*Cooking, error)

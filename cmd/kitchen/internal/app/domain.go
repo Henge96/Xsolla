@@ -49,8 +49,8 @@ type (
 
 	Task struct {
 		ID         uuid.UUID
-		Order      Order
-		TaskKind   dom.TaskKind
+		Cooking    Cooking
+		TaskKind   TaskKind
 		CreatedAt  time.Time
 		UpdatedAt  time.Time
 		FinishedAt time.Time
@@ -58,8 +58,9 @@ type (
 
 	CookingParams struct {
 		// todo
-		Limit  uint16
-		Offset uint16
+		CookingStatus CookingStatus
+		Limit         uint16
+		Offset        uint16
 	}
 
 	EventAddOrderFromQueue struct {
@@ -72,17 +73,17 @@ type (
 		SourceCreatedAt time.Time
 	}
 
-	EventUpdateOrder struct {
-		// todo add order fields
-		TaskID    uuid.UUID
-		ID        uuid.UUID
-		Status    dom.OrderStatus
-		CreatedAt time.Time
+	EventUpdateCooking struct {
+		TaskID  uuid.UUID
+		Cooking Cooking
 	}
-)
 
-// CookingStatus for cooking in-app.
-type CookingStatus uint8
+	// CookingStatus for cooking in-app.
+	CookingStatus uint8
+
+	// TaskKind represents kind of task.
+	TaskKind uint8
+)
 
 //go:generate stringer -output=stringer.CookingStatus.go -type=CookingStatus -trimprefix=CookingStatus
 const (
@@ -92,4 +93,10 @@ const (
 	CookingStatusNeedToStart
 	CookingStatusInProgress
 	CookingStatusCompleted
+)
+
+//go:generate stringer -output=stringer.TaskKind.go -type=TaskKind -trimprefix=TaskKind
+const (
+	_ TaskKind = iota
+	TaskKindEventUpdateCooking
 )

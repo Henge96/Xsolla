@@ -78,9 +78,9 @@ func (c *Client) Process(ctx context.Context) error {
 	return group.Wait()
 }
 
-func (c *Client) UpdateOrder(ctx context.Context, eventUpdate app.EventUpdateOrder) error {
-	// just example about publishing
-	_ = c.nats.Publish(ctx, kitchen_pb.TopicUpdateOrderStatus, eventUpdate.TaskID, eventUpdate)
+func (c *Client) UpdateCooking(ctx context.Context, eventUpdate app.EventUpdateCooking) error {
+	// todo other handler logic
+	_ = c.nats.Publish(ctx, kitchen_pb.TopicUpdate, eventUpdate.TaskID, eventUpdate)
 	return nil
 }
 

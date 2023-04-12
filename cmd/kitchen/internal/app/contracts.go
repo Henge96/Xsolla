@@ -55,9 +55,9 @@ type (
 
 	// Queue sends events to queue.
 	Queue interface {
-		// UpdateOrder sends event 'EventUpdateOrder' to queue.
+		// UpdateCooking sends event 'EventUpdateCooking' to queue.
 		// Errors: unknown.
-		UpdateOrder(ctx context.Context, eventUpdate EventUpdateOrder) error
+		UpdateCooking(ctx context.Context, eventUpdate EventUpdateCooking) error
 		// UpdateOrderStatus gets EventUpdateOrderStatusFromQueue from queue.
 		// Errors: unknown.
 		UpdateOrderStatus() <-chan dom.Event[EventUpdateOrderStatusFromQueue]

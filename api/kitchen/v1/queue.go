@@ -9,12 +9,12 @@ import (
 
 // Topics.
 const (
-	description            = "Events from shop service for notifying about events."
-	Stream                 = "kitchen"
-	events                 = Stream + ".events"
-	version                = events + ".v1."
-	TopicUpdateOrderStatus = version + "update"
-	SubscribeToAllEvents   = version + "*"
+	description          = "Events from shop service for notifying about events."
+	Stream               = "kitchen"
+	events               = Stream + ".events"
+	version              = events + ".v1."
+	TopicUpdate          = version + "update"
+	SubscribeToAllEvents = version + "*"
 )
 
 const (
@@ -28,7 +28,7 @@ func Migrate(js nats.JetStreamManager) error {
 	eventStream := &nats.StreamConfig{
 		Name:        Stream,
 		Description: description,
-		Subjects:    []string{TopicUpdateOrderStatus},
+		Subjects:    []string{TopicUpdate},
 		Retention:   nats.LimitsPolicy,
 		Storage:     nats.FileStorage,
 		Replicas:    replicas,

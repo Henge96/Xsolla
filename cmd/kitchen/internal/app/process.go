@@ -35,7 +35,7 @@ func (a *App) Process(ctx context.Context) error {
 
 			for i := range tasks {
 				switch tasks[i].TaskKind {
-				case dom.TaskKindEventUpdate:
+				case TaskKindEventUpdateCooking:
 					err = a.handleTaskKindEventUpdate(ctx, tasks[i])
 				default:
 					log.Println("unknown task kind", tasks[i])
@@ -67,11 +67,9 @@ func (a *App) Process(ctx context.Context) error {
 }
 
 func (a *App) handleTaskKindEventUpdate(ctx context.Context, task Task) error {
-	err := a.queue.UpdateOrder(ctx, EventUpdateOrder{
+	err := a.queue.UpdateCooking(ctx, EventUpdateCooking{
 		TaskID:    task.ID,
-		ID:        task.Order.ID,
-		Status:    task.Order.Status,
-		CreatedAt: task.Order.UpdatedAt,
+		Cooking:   task.Cooking,
 	})
 	if err != nil {
 		return fmt.Errorf("a.queue.AddComment: %w", err)

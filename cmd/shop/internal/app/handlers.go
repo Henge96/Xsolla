@@ -18,7 +18,7 @@ func (a *App) CreateOrder(ctx context.Context, order Order) (id uuid.UUID, err e
 	order.Status = dom.OrderStatusNew
 
 	err = a.repo.Tx(ctx, func(repo Repo) error {
-		o, err := a.repo.SaveOrder(ctx, order)
+		o, err := repo.SaveOrder(ctx, order)
 		if err != nil {
 			return fmt.Errorf("a.repo.SaveOrder: %w", err)
 		}
@@ -27,7 +27,7 @@ func (a *App) CreateOrder(ctx context.Context, order Order) (id uuid.UUID, err e
 		// todo change to save in batch
 		for i := range order.Items {
 			order.Items[i].OrderID = o.ID
-			item, err := a.repo.SaveItem(ctx, order.Items[i])
+			item, err := repo.SaveItem(ctx, order.Items[i])
 			if err != nil {
 				return fmt.Errorf("a.repo.SaveItem: %w", err)
 			}
@@ -35,7 +35,7 @@ func (a *App) CreateOrder(ctx context.Context, order Order) (id uuid.UUID, err e
 			o.Items = append(o.Items, *item)
 		}
 
-		_, err = a.repo.SaveTask(ctx, Task{
+		_, err = repo.SaveTask(ctx, Task{
 			Order:    *o,
 			TaskKind: dom.TaskKindEventAdd,
 		})
@@ -68,14 +68,14 @@ func (a *App) ChangeOrderStatus(ctx context.Context, orderID uuid.UUID, status d
 	}
 
 	err = a.repo.Tx(ctx, func(repo Repo) error {
-		updatedOrder, err := a.repo.UpdateOrder(ctx, Order{
+		updatedOrder, err := repo.UpdateOrder(ctx, Order{
 			Status: status,
 		})
 		if err != nil {
 			return fmt.Errorf("a.repo.UpdateOrder: %w", err)
 		}
 
-		_, err = a.repo.SaveTask(ctx, Task{
+		_, err = repo.SaveTask(ctx, Task{
 			Order:    *updatedOrder,
 			TaskKind: dom.TaskKindEventUpdate,
 		})

@@ -21,7 +21,7 @@ func (a *App) ChangeCookingStatus(ctx context.Context, cookingID uuid.UUID, stat
 	}
 
 	err = a.repo.Tx(ctx, func(repo Repo) error {
-		updatedCooking, err := a.repo.UpdateCooking(ctx, Cooking{
+		updatedCooking, err := repo.UpdateCooking(ctx, Cooking{
 			Status: status,
 		})
 		if err != nil {
@@ -29,7 +29,7 @@ func (a *App) ChangeCookingStatus(ctx context.Context, cookingID uuid.UUID, stat
 		}
 
 		if status == CookingStatusInProgress || status == CookingStatusCompleted {
-			_, err = a.repo.SaveTask(ctx, Task{
+			_, err = repo.SaveTask(ctx, Task{
 				Cooking:  *updatedCooking,
 				TaskKind: TaskKindEventUpdateCooking,
 			})

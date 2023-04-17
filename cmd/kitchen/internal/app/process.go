@@ -88,7 +88,7 @@ func (a *App) handleNewOrder(ctx context.Context, event dom.Event[EventAddOrderF
 	rand.Seed(time.Now().Unix())
 
 	err := a.repo.Tx(ctx, func(repo Repo) error {
-		order, err := a.repo.SaveOrder(ctx, event.Body().Order)
+		order, err := repo.SaveOrder(ctx, event.Body().Order)
 		switch {
 		case errors.Is(err, ErrDuplicate):
 			// We must acknowledge this message.
@@ -107,7 +107,7 @@ func (a *App) handleNewOrder(ctx context.Context, event dom.Event[EventAddOrderF
 			OrderID: order.ID,
 		}
 
-		_, err = a.repo.SaveCooking(ctx, c)
+		_, err = repo.SaveCooking(ctx, c)
 		if err != nil {
 			return fmt.Errorf("a.repo.SaveCooking: %w", err)
 		}
@@ -144,12 +144,12 @@ func (a *App) handleUpdateOrder(ctx context.Context, event dom.Event[EventUpdate
 		order.Status = event.Body().Status
 
 		err = a.repo.Tx(ctx, func(repo Repo) error {
-			_, err = a.repo.UpdateOrder(ctx, *order)
+			_, err = repo.UpdateOrder(ctx, *order)
 			if err != nil {
 				return fmt.Errorf("a.repo.UpdateOrder: %w", err)
 			}
 
-			_, err = a.repo.UpdateCookingStatusByOrderID(ctx, order.ID, CookingStatusNeedToStart)
+			_, err = repo.UpdateCookingStatusByOrderID(ctx, order.ID, CookingStatusNeedToStart)
 			if err != nil {
 				return fmt.Errorf("a.repo.UpdateCookingStatusByOrderID: %w", err)
 			}
